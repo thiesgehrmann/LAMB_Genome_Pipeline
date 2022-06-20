@@ -12,7 +12,7 @@ LGPS_version=`LGP_version "$LGPS_DIR/$0"`
 # LAMB Genome Pipeline script
 
 function usage(){
-    echo "LAMB Genome Pipeline (Step XXX)"
+    echo "LAMB Genome Pipeline ($LGPS_name)"
     echo "Version: $LGPS_version"
     echo "Usage: $0 [options] <GENOMENAME> <file1> <file2> <file3>"
     echo "  Options:"
