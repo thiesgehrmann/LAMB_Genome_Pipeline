@@ -1,4 +1,5 @@
 CONDA_dir=`dirname $(which conda)`"/../"
+CONDA_dir="/media/ssdsata/thies/miniconda3/"
 LGP_outdir="/media/hdd/LGP/"
 
 
