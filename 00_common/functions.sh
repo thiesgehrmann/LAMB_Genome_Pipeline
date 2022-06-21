@@ -24,9 +24,12 @@ function LGP_conda(){
     if [ -z `which conda` ]; then
         LGP_warn "Conda not found. Will continue without."
     else
+        
         if [ -z `conda env list | cut -d\  -f1 | grep "$envname"` ]; then
+            LGP_message "Creating conda environment $envname from '$yaml'"
             conda env create -n "$envname" --file "$yaml" &> /dev/null
         fi
+        LGP_message "Loading conda environment '$envname'"
         conda activate "$envname"
     fi
 }
@@ -47,7 +50,7 @@ function LGP_init(){
     
     LGP_message "INITIALIZING: $name ($version) for $genomename"
     
-    local path="$outdir/$genomename/$name/$version"
+    local path=`realpath -m "$outdir/$genomename/$name/$version"`
     
     if [ -e "$path" ]; then
         status=`LGP_status "$path"`
@@ -55,9 +58,9 @@ function LGP_init(){
 
             LGP_warn "'$path' is marked as COMPLETED or RUNNING. You will overwrite a previous/running analysis."
             if [ "$force" -eq 0 ]; then
-                for i in `seq 10`; do
+                for i in `seq $LGP_WARNING_TIME`; do
                     wrn=`LGP_warn "Press ctrl+c to cancel this" 2>&1`
-                    echo -en "\r$wrn ($((10-i)))..." >&2
+                    echo -en "\r$wrn ($((LGP_WARNING_TIME-i)))..." >&2
                     sleep 1
                     if [ ! $? -eq 0 ] ; then # Make sure we catch an escape!
                         exit 2
@@ -74,6 +77,8 @@ function LGP_init(){
         exit 2
     fi
     
+    rm -f "$path/stderr"; touch "$path/stderr"
+    rm -f "$path/stdout"; touch "$path/stdout"
     echo "$LGP_STATUS_RUNNING" > "$path/status"
     
     echo "
@@ -136,7 +141,6 @@ function LGP_fail(){
     
 function LGP_status(){
     local path="$1"
-    
 
     status=`cat "$path/status"`
     case "$status" in
