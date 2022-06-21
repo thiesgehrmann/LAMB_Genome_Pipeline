@@ -11,7 +11,7 @@
 LGPS_DIR=`realpath "$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )"`;                                      #
 LGP_DIR=`realpath "$LGPS_DIR/../"`                                                                                                                  #
 for lgpc in `ls "$LGP_DIR/00_common/" | grep '[.]sh$' `; do                                                                                         #
-    source "$LGP_DIR/00_common/$lgpc";                                                                                                             #
+    source "$LGP_DIR/00_common/$lgpc";                                                                                                              #
 done                                                                                                                                                #
 LGPS_name=`basename "$LGPS_DIR"`;                                                                                                                   #
 LGPS_version=`LGP_version "$LGPS_DIR/$0"`                                                                                                           #
@@ -60,7 +60,7 @@ nparams=3 # The number of parameters following you require (if not specified, se
 
 while true; do
     case $1 in
-        ############### DO NOT TOUCH########################################
+        ############### DO NOT TOUCH #######################################
         (--noconda)                                                        #
             noconda=1; shift 1;;                                           #
         (--force)                                                          #
