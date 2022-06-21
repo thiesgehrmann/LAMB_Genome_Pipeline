@@ -121,9 +121,9 @@ LGP_existsorfail "$file3" 1
 path=`LGP_init "$LGP_outdir" "$genomename" "$LGPS_name" "$LGPS_version" "$force" "$command"`                                                        #
                                                                                                                                                     #
 # Load conda environment (if necessary)                                                                                                             #
-if [ "$noconda" -eq 0 ]; then                                                                                                                       #
+if [ "$noconda" -eq 0 ] && [ -e "$LGPS_DIR/conda.yml" ]; then                                                                                       #
     LGP_conda "mda" "$LGPS_DIR/conda.yml" # Use an existing conda environment for testing                                                           #
-    #LGP_conda "LGPS_${LGPS_name}" "$LGPS_DIR/conda.yml" # Use this when ready                                                                      #
+    #LGP_conda "LGP_${LGPS_name}" "$LGPS_DIR/conda.yml" # Use this when ready                                                                       #
 fi                                                                                                                                                  #
                                                                                                                                                     #
 #####################################################################################################################################################
