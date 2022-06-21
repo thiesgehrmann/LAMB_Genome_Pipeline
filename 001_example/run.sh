@@ -1,16 +1,27 @@
 #!/usr/bin/env bash
+# LAMB Genome Pipeline script
 
 ###############################################################################
-# Boilerplate code
+###############################################################################
+################################ DO NOT TOUCH #################################
+###############################################################################
+###############################################################################
+
+# Boilerplate initialize code
 LGPS_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
 for lgpc in `ls "$LGPS_DIR/../00_common/" | grep '[.]sh$' `; do source "$LGPS_DIR/../00_common/$lgpc"; done;
 LGPS_name=`basename "$LGPS_DIR"`
 LGPS_version=`LGP_version "$LGPS_DIR/$0"`
+command="$0 $@"
 
 
-###############################################################################
-# LAMB Genome Pipeline script
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+#+++++++++++++++++++++++++++++++ MODIFY HERE #++++++++++++++++++++++++++++++++#
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 
+# Define the usage function
 function usage(){
     echo "LAMB Genome Pipeline ($LGPS_name)"
     echo "Version: $LGPS_version"
@@ -19,6 +30,7 @@ function usage(){
     echo "    -t|--threads  : Number of threads to use (default 1)"
     echo "    --noconda:    : Do not use (default yes)"
     echo "    --force       : Do not give opportunity to cancel run if previous directory exists (default no)"
+    echo "    --outdir      : Use this location instead of the standard LGP output (default $LGP_outdir)"
     echo "  Inputs:"
     echo "    GENOMENAME : The name of this genome (e.g. AMBV666)"
     echo "    file1 : File path to file1."
@@ -29,7 +41,7 @@ function usage(){
 ###############################################################################
 # Process options and inputs
 
-ARGS=$(getopt -o 't:' --long 'threads:,noconda,force' -- "$@") || exit
+ARGS=$(getopt -o 't:' --long 'threads:,noconda,force,outdir:' -- "$@") || exit
 eval "set -- $ARGS"
 
 threads=1
@@ -38,21 +50,27 @@ force=0
 
 while true; do
     case $1 in
-      (-t|--threads)
+        (-t|--threads)
             threads=$2; shift 2;;
-      (--noconda)
+        (--noconda)
             noconda=1; shift 1;;
-      (--force)
+        (--force)
             force=1; shift 1;;
-      (--)  shift; break;;
-      (*)   usage $0; exit 1;;           # error
+        (--outdir)
+          export LGP_outdir=`realpath "$2"`; shift 2;;
+        (--)  shift; break;;
+        (*)   usage $0; exit 1;;           # error
     esac
 done
 
-#############################
+###############################################################################
+###############################################################################
+################################ DO NOT TOUCH #################################
+###############################################################################
+###############################################################################
 # Deal with file inputs
 
-remaining=("$@")
+remaining=("$@") # Get the rest of the parmeters that are not options
 
 if [ ! "${#remaining[@]}" -eq 4 ]; then
     usage $0
@@ -60,6 +78,13 @@ if [ ! "${#remaining[@]}" -eq 4 ]; then
 fi
 
 genomename=${remaining[0]}
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+#+++++++++++++++++++++++++++++++ MODIFY HERE #++++++++++++++++++++++++++++++++#
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+
 file1=`realpath "${remaining[1]}"`
 file2=`realpath "${remaining[2]}"`
 file3=`realpath "${remaining[3]}"`
@@ -70,8 +95,13 @@ LGP_existsorfail "$file2" 1
 LGP_existsorfail "$file3" 1
 
 ###############################################################################
+###############################################################################
+################################ DO NOT TOUCH #################################
+###############################################################################
+###############################################################################
 # Initialize the output folder
-outdir=`LGP_prepare "$genomename" "$LGPS_name" "$LGPS_version" "$force"`
+path=`LGP_init "$LGP_outdir" "$genomename" "$LGPS_name" "$LGPS_version" "$force" "$command"`
+
 
 # Load conda environment (if necessary)
 if [ "$noconda" -eq 0 ]; then
@@ -80,16 +110,38 @@ if [ "$noconda" -eq 0 ]; then
     #LGP_conda "LGPS_${LGPS_name}" "$LGPS_DIR/conda.yml" # Use this when ready
 fi
 
-
-###############################################################################
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+#+++++++++++++++++++++++++++++++ MODIFY HERE #++++++++++++++++++++++++++++++++#
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 # Program code
 
 
 # Perform the operations
-cp "$file1" "$outdir/file1"
-cp "$file2" "$outdir/file2"
-cp "$file3" "$outdir/file3"
+cp "$file1" "$path/file1"
+status1="$?" # KEEP THE RETURN VALUE OF THE ANALYSIS
+
+cp "$file2" "$path/file2"
+status2="$?"
+
+cp "$file3" "$path/file3"
+status3="$?"
+
+status=$((status1 + status2 + status3))
+
 
 ###############################################################################
+###############################################################################
+################################ DO NOT TOUCH #################################
+###############################################################################
+###############################################################################
+
 # Wrap up
-LGP_message "Completed $LGPS_name"
+if [ "$status" -eq 0 ]; then
+    LGP_complete "$path"
+else
+    LGP_fail "$path"
+fi
+
+###############################################################################
